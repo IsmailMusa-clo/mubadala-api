@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Controllers\Api\Auth\AuthController;
+use App\Http\Controllers\Api\ChatController;
+use App\Http\Controllers\Api\ExchangeController;
+use App\Http\Controllers\Api\OfferController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProfileController;
 use Illuminate\Http\Request;
@@ -25,9 +28,21 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('logout', [AuthController::class, 'logout']);
-    Route::apiResource('products', ProductController::class);
-    Route::post('products/add-images', [ProductController::class, 'addImage']);
-    Route::get('my-products', [ProductController::class, 'myProducts']);
     Route::get('profile', [ProfileController::class, 'index']);
     Route::post('profile/update', [ProfileController::class, 'update']);
+
+    Route::post('products/add-images', [ProductController::class, 'addImage']);
+    Route::get('my-products', [ProductController::class, 'myProducts']);
+    Route::get('my-offers', [OfferController::class, 'myOffers']);
+    Route::put('offers/{offer}/accept', [OfferController::class, 'acceptOffer']);
+    Route::put('products/{product}/exchanged-product', [ProductController::class, 'exchangedProduct']);
+    Route::apiResource('products', ProductController::class);
+    Route::apiResource('offers', OfferController::class);
+
+    Route::post('chat', [ChatController::class, 'getOrCreateChat']);
+    Route::post('chat/send-message', [ChatController::class, 'sendMessage']);
+    Route::get('chat/inbox', [ChatController::class, 'inbox']);
+    Route::delete('chat/{message}/delete-message', [ChatController::class, 'deleteMessage']);
+
+    Route::post('exchange/{product}/contact', [ExchangeController::class, 'addContact']);
 });

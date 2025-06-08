@@ -28,4 +28,19 @@ class Product extends Model
     {
         return $this->belongsToMany(Tag::class, 'product_tags');
     }
+
+    public function offers()
+    {
+        return $this->hasMany(Offer::class);
+    }
+
+    public function chats()
+    {
+        return $this->hasMany(Chat::class);
+    }
+
+    public function exchange()
+    {
+        return $this->hasOne(Exchange::class);
+    }
 }

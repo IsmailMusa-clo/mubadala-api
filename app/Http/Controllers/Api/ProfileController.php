@@ -13,6 +13,8 @@ class ProfileController extends Controller
     public function index()
     {
         $user = auth()->user();
+        $products_exchanged = $user->products()->where('status', 'exchanged')->count();
+        $user->products_exchanged = $products_exchanged ?? 0;
         return response()->json([
             'status' => true,
             'profile' => $user

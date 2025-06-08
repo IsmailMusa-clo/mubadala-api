@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Offer;
 use App\Models\Product;
 use App\Models\ProductImage;
 use App\Models\Tag;
@@ -131,6 +132,10 @@ class ProductController extends Controller
     public function show(Product $product)
     {
         //
+        $product->load(['user', 'offers', 'tags', 'images', 'category']);
+        $product->makeHidden('category');
+        $product->offers_count = $product->offers()->count();
+        $product->category_name = $product->category->name;
         return response()->json([
             'status' => true,
             'product' => $product->load('user')
@@ -153,45 +158,54 @@ class ProductController extends Controller
             'images.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:10240',
         ]);
         if (!$validator->fails()) {
-            $product->category_id = $request->input('category_id');
-            $product->name = $request->input('name');
-            $product->description = $request->input('description');
-            $product->location = $request->input('location');
-            $isUpdated = $product->update();
-            if ($request->has('tags')) {
-                $tagIds = [];
-                foreach ($request->input('tags', []) as $tagName) {
-                    $tag = Tag::firstOrCreate(['name' => trim($tagName)]);
-                    $tagIds[] = $tag->id;
-                }
-                $product->tags()->sync($tagIds);
-            }
-            if ($request->hasFile('images')) {
-                foreach ($product->images as $oldImage) {
-                    if (Storage::disk('public')->exists($oldImage->image)) {
-                        Storage::disk('public')->delete($oldImage->image);
+            $user = $request->user();
+            if ($user->id === $product->user_id) {
+                $product->category_id = $request->input('category_id');
+                $product->name = $request->input('name');
+                $product->description = $request->input('description');
+                $product->location = $request->input('location');
+                $isUpdated = $product->update();
+                if ($request->has('tags')) {
+                    $tagIds = [];
+                    foreach ($request->input('tags', []) as $tagName) {
+                        $tag = Tag::firstOrCreate(['name' => trim($tagName)]);
+                        $tagIds[] = $tag->id;
                     }
-                    $oldImage->delete();
+                    $product->tags()->sync($tagIds);
                 }
+                if ($request->hasFile('images')) {
+                    foreach ($product->images as $oldImage) {
+                        if (Storage::disk('public')->exists($oldImage->image)) {
+                            Storage::disk('public')->delete($oldImage->image);
+                        }
+                        $oldImage->delete();
+                    }
 
-                foreach ($request->file('images') as $imageFile) {
-                    $path = $imageFile->store("product_images/{$product->id}", 'public');
-                    $productImage = new ProductImage();
-                    $productImage->product_id = $product->id;
-                    $productImage->image = $path;
-                    $productImage->save();
+                    foreach ($request->file('images') as $imageFile) {
+                        $path = $imageFile->store("product_images/{$product->id}", 'public');
+                        $productImage = new ProductImage();
+                        $productImage->product_id = $product->id;
+                        $productImage->image = $path;
+                        $productImage->save();
+                    }
                 }
+                $product->load('user', 'category', 'images', 'tags');
+                $product->makeHidden('category');
+                $product->category_name = $product->category->name;
+                return response()->json([
+                    'status' => $isUpdated,
+                    'message' => $isUpdated ? 'تم تعديل المنتج بنجاح' : 'فشل تعديل المنتج',
+                    'product' => $product
+                ],  $isUpdated ? 200 : 400);
+            } else {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'عذرا غير مصرح لك بتعديل المنتج لانك لست مالكه'
+                ], 401);
             }
-            $product->load('user', 'category', 'images', 'tags');
-            $product->makeHidden('category');
-            $product->category_name = $product->category->name;
-            return response()->json([
-                'status' => $isUpdated,
-                'message' => $isUpdated ? 'تم تعديل المنتج بنجاح' : 'فشل تعديل المنتج',
-                'product' => $product
-            ],  $isUpdated ? 200 : 400);
         } else {
             return response()->json([
+                'status' => false,
                 'message' => $validator->getMessageBag()->first()
             ], 400);
         }
@@ -203,19 +217,27 @@ class ProductController extends Controller
     public function destroy(Product $product)
     {
         //
-        if ($product->images) {
-            foreach ($product->images as $image) {
-                if (Storage::disk('public')->exists($image->image)) {
-                    Storage::disk('public')->delete($image->image);
+        $user = auth()->user();
+        if ($user->id === $product->user_id) {
+            if ($product->images) {
+                foreach ($product->images as $image) {
+                    if (Storage::disk('public')->exists($image->image)) {
+                        Storage::disk('public')->delete($image->image);
+                    }
+                    $image->delete();
                 }
-                $image->delete();
             }
+            $isDeleted = $product->delete();
+            return response()->json([
+                'status' => $isDeleted,
+                'message' => $isDeleted ? 'تم حذف المنتج بنجاح' : 'فشل حذف المنتج',
+            ], $isDeleted ? 200 : 400);
+        } else {
+            return response()->json([
+                'status' => false,
+                'message' => 'عذرا غير مصرح لك بحذف المنتج لانك لست مالكه'
+            ], 401);
         }
-        $isDeleted = $product->delete();
-        return response()->json([
-            'status' => $isDeleted,
-            'message' => $isDeleted ? 'تم حذف المنتج بنجاح' : 'فشل حذف المنتج',
-        ], $isDeleted ? 200 : 400);
     }
 
     public function myProducts()
@@ -226,5 +248,42 @@ class ProductController extends Controller
             'status' => true,
             'products' => $products,
         ], 200);
+    }
+
+    public function exchangedProduct(Product $product)
+    {
+        $user = auth()->user();
+        $offer = Offer::where('status', 'accepted')
+            ->where('product_id', $product->id)
+            ->first();
+
+        if ($user->id === $product->user_id) {
+            if ($offer) {
+                $offer->status = 'completed';
+                $isSavedOffer = $offer->save();
+                $product->status = 'exchanged';
+                $isSavedProduct = $product->save();
+                if ($isSavedOffer && $isSavedProduct) {
+                    $exchange = $product->exchange;
+                    $exchange->status = 'completed';
+                    $exchange->save();
+                }
+                return response()->json([
+                    'status' => $isSavedOffer && $isSavedProduct,
+                    'message' => $isSavedOffer && $isSavedProduct ? 'تمت عملية التبادل بنجاح' : 'فشلت عملية التبادل',
+                    'offer' => $offer->load('product.user', 'exchange')
+                ], $isSavedOffer && $isSavedProduct ? 200 : 400);
+            } else {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'عذرا لم يتم قبول العروض بعد'
+                ], 400);
+            }
+        } else {
+            return response()->json([
+                'status' => false,
+                'message' => 'عذرا غير مصرح لك بتحديد ك تم التبادل لانك لست مالك للمنتج'
+            ], 400);
+        }
     }
 }
