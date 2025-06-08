@@ -31,4 +31,9 @@ class Offer extends Model
     {
         return $this->hasOne(Exchange::class);
     }
+
+    public function images()
+    {
+        return $this->hasMany(OfferImage::class);
+    }
 }

@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Exchange;
 use App\Models\Offer;
+use App\Models\OfferImage;
 use App\Models\Product;
 use Dotenv\Validator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Storage;
 
 class OfferController extends Controller
 {
@@ -35,6 +37,8 @@ class OfferController extends Controller
             'description' => 'required|string|min:3',
             'location' => 'required|string|min:3',
             'product_id' => 'required|integer|exists:products,id',
+            'images' => 'nullable|array',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:10240',
         ]);
         if (!$validator->fails()) {
             $user = $request->user();
@@ -43,10 +47,20 @@ class OfferController extends Controller
                 'location' => $request->input('location'),
                 'product_id' => $request->input('product_id'),
             ]);
+            if ($request->file('images')) {
+                foreach ($request->file('images') as $image) {
+                    $path = $image->store("offer_images/{$offer->id}", 'public');
+                    $offerImage = new offerImage();
+                    $offerImage->offer_id = $offer->id;
+                    $offerImage->path = $path;
+                    $offerImage->save();
+                    // $imagePaths[] = url('storage/' . $path);
+                }
+            }
             return response()->json([
                 'status' => $offer ? true : false,
                 'message' => $offer ? 'تم انشاء العرض بنجاح' : 'فشل انشاء العرض',
-                'offer' => $offer->load(['product', 'user']),
+                'offer' => $offer->load(['product', 'user', 'images']),
             ], $offer ? 201 : 400);
         } else {
             return response()->json([
@@ -73,6 +87,8 @@ class OfferController extends Controller
         $validator = Validator($request->all(), [
             'description' => 'required|string|min:3',
             'location' => 'required|string|min:3',
+            'images' => 'nullable|array',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:10240',
         ]);
         if (!$validator->fails()) {
             $user = auth()->user();
@@ -80,10 +96,25 @@ class OfferController extends Controller
                 $offer->description = $request->input('description');
                 $offer->location = $request->input('location');
                 $isUpdated = $offer->update();
+                if ($request->hasFile('images')) {
+                    foreach ($offer->images as $oldImage) {
+                        if (Storage::disk('public')->exists($oldImage->path)) {
+                            Storage::disk('public')->delete($oldImage->path);
+                        }
+                        $oldImage->delete();
+                    }
+                    foreach ($request->file('images') as $imageFile) {
+                        $path = $imageFile->store("offer_images/{$offer->id}", 'public');
+                        $offerImage = new OfferImage();
+                        $offerImage->offer_id = $offer->id;
+                        $offerImage->path = $path;
+                        $offerImage->save();
+                    }
+                }
                 return response()->json([
                     'status' => $isUpdated,
                     'message' => $isUpdated ? 'تم تعديل العرض بنجاح' : 'فشل تعديل العرض',
-                    'offer' => $offer->load(['user', 'product']),
+                    'offer' => $offer->load(['user', 'product', 'images']),
                 ], $isUpdated ? 200 : 400);
             } else {
                 return response()->json([
@@ -107,6 +138,14 @@ class OfferController extends Controller
         //
         $user = $request->user();
         if ($user->id === $offer->user_id) {
+            if ($offer->images) {
+                foreach ($offer->images as $image) {
+                    if (Storage::disk('public')->exists($image->path)) {
+                        Storage::disk('public')->delete($image->path);
+                    }
+                    $image->delete();
+                }
+            }
             $isDeleted = $offer->delete();
             return response()->json([
                 'status' => $isDeleted,
