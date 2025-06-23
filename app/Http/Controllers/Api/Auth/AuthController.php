@@ -60,6 +60,11 @@ class AuthController extends Controller
             $user->first_name = $names[0];
             $user->last_name = count($names) > 1 ? implode(' ', array_slice($names, 1)) : '';
             $isSaved = $user->save();
+
+            if ($isSaved) {
+                $user->sendEmailVerificationNotification();
+            }
+
             return response()->json([
                 'status' => $isSaved,
                 'message' => $isSaved ? 'تم انشاء حساب جديد بنجاح' : 'فشل انشاء حساب جديد',
