@@ -89,4 +89,32 @@ class AuthController extends Controller
             'message' => 'لم يتم العثور على مستخدم',
         ], 401);
     }
+
+    public function changePassword(Request $request)
+    {
+        $validator = Validator($request->all(), [
+            'current_password' => 'required|string',
+            'password' => 'required|string|min:8|confirmed|different:current_password',
+        ]);
+        if (! $validator->fails()) {
+            $user = auth()->user();
+            if (!Hash::check($request->current_password, $user->password)) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'كلمة المرور الحالية غير صحيحة.',
+                ], 400);
+            }
+            $user->password = Hash::make($request->input('password'));
+            $isSaved = $user->save();
+            return response()->json([
+                'status' => $isSaved,
+                'message' => $isSaved ? 'تم تغيير كلمة المرور بنجاح' : 'فشل تغيير كلمة المرور'
+            ], $isSaved ? 200 : 400);
+        } else {
+            return response()->json([
+                'status' => false,
+                'message' => $validator->getMessageBag()->first()
+            ], 400);
+        }
+    }
 }

@@ -27,7 +27,7 @@ class ProductController extends Controller
 
     public function index(Request $request)
     {
-        $query = Product::with('user', 'category', 'images');
+        $query = Product::with('user', 'category', 'images', 'tags');
 
         if ($request->filled('category_id')) {
             $query->whereHas('category', function ($q) use ($request) {

@@ -1,11 +1,13 @@
 <?php
 
 use App\Http\Controllers\Api\Auth\AuthController;
+use App\Http\Controllers\Api\Auth\EmailVerificationController;
 use App\Http\Controllers\Api\ChatController;
 use App\Http\Controllers\Api\ExchangeController;
 use App\Http\Controllers\Api\OfferController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProfileController;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -26,10 +28,11 @@ Route::middleware('guest')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
 });
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware('auth:sanctum', 'verified')->group(function () {
     Route::get('logout', [AuthController::class, 'logout']);
     Route::get('profile', [ProfileController::class, 'index']);
     Route::post('profile/update', [ProfileController::class, 'update']);
+    Route::post('change-password', [AuthController::class, 'changePassword']);
 
     Route::post('products/add-images', [ProductController::class, 'addImage']);
     Route::get('my-products', [ProductController::class, 'myProducts']);
@@ -45,4 +48,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('chat/{message}/delete-message', [ChatController::class, 'deleteMessage']);
 
     Route::post('exchange/{product}/contact', [ExchangeController::class, 'addContact']);
+});
+
+Route::prefix('email')->group(function () {
+
+    Route::post('verification-notification', [EmailVerificationController::class, 'resend'])
+        ->middleware(['auth:sanctum', 'throttle:6,1'])
+        ->name('verification.send');
+
+    Route::get('verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
+        ->middleware(['signed'])
+        ->name('verification.verify');
 });
