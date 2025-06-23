@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Auth\EmailVerificationController;
+use App\Http\Controllers\Api\Auth\ForgotPasswordController;
 use App\Http\Controllers\Api\ChatController;
 use App\Http\Controllers\Api\ExchangeController;
 use App\Http\Controllers\Api\OfferController;
@@ -59,4 +60,10 @@ Route::prefix('email')->group(function () {
     Route::get('verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
         ->middleware(['signed'])
         ->name('verification.verify');
+});
+
+
+Route::prefix('auth')->middleware('guest')->group(function () {
+    Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail']);
+    Route::post('/reset-password', [ForgotPasswordController::class, 'reset']);
 });
