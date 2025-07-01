@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\Auth\EmailVerificationController;
 use App\Http\Controllers\Api\Auth\ForgotPasswordController;
 use App\Http\Controllers\Api\ChatController;
 use App\Http\Controllers\Api\ExchangeController;
+use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\OfferController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProfileController;
@@ -39,7 +40,7 @@ Route::middleware('auth:sanctum', 'verified')->group(function () {
     Route::get('my-products', [ProductController::class, 'myProducts']);
     Route::get('my-offers', [OfferController::class, 'myOffers']);
     Route::put('offers/{offer}/accept', [OfferController::class, 'acceptOffer']);
-    Route::put('products/{product}/exchanged-product', [ProductController::class, 'exchangedProduct']);
+    Route::put('products/{product}/exchanged-product', [ExchangeController::class, 'exchangedProduct']);
     Route::apiResource('products', ProductController::class);
     Route::apiResource('offers', OfferController::class);
 
@@ -49,6 +50,7 @@ Route::middleware('auth:sanctum', 'verified')->group(function () {
     Route::delete('chat/{message}/delete-message', [ChatController::class, 'deleteMessage']);
 
     Route::post('exchange/{product}/contact', [ExchangeController::class, 'addContact']);
+    Route::get('notifications', [NotificationController::class, 'index']);
 });
 
 Route::prefix('email')->group(function () {

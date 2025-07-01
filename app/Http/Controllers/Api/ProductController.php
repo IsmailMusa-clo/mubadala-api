@@ -249,41 +249,4 @@ class ProductController extends Controller
             'products' => $products,
         ], 200);
     }
-
-    public function exchangedProduct(Product $product)
-    {
-        $user = auth()->user();
-        $offer = Offer::where('status', 'accepted')
-            ->where('product_id', $product->id)
-            ->first();
-
-        if ($user->id === $product->user_id) {
-            if ($offer) {
-                $offer->status = 'completed';
-                $isSavedOffer = $offer->save();
-                $product->status = 'exchanged';
-                $isSavedProduct = $product->save();
-                if ($isSavedOffer && $isSavedProduct) {
-                    $exchange = $product->exchange;
-                    $exchange->status = 'completed';
-                    $exchange->save();
-                }
-                return response()->json([
-                    'status' => $isSavedOffer && $isSavedProduct,
-                    'message' => $isSavedOffer && $isSavedProduct ? 'تمت عملية التبادل بنجاح' : 'فشلت عملية التبادل',
-                    'offer' => $offer->load('product.user', 'exchange')
-                ], $isSavedOffer && $isSavedProduct ? 200 : 400);
-            } else {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'عذرا لم يتم قبول العروض بعد'
-                ], 400);
-            }
-        } else {
-            return response()->json([
-                'status' => false,
-                'message' => 'عذرا غير مصرح لك بتحديد ك تم التبادل لانك لست مالك للمنتج'
-            ], 400);
-        }
-    }
 }

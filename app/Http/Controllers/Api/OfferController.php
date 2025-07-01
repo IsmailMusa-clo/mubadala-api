@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\AcceptOffer;
+use App\Events\AddOffer;
 use App\Http\Controllers\Controller;
 use App\Models\Exchange;
 use App\Models\Offer;
@@ -57,6 +59,7 @@ class OfferController extends Controller
                     // $imagePaths[] = url('storage/' . $path);
                 }
             }
+            broadcast(new AddOffer($offer))->toOthers();
             return response()->json([
                 'status' => $offer ? true : false,
                 'message' => $offer ? 'تم انشاء العرض بنجاح' : 'فشل انشاء العرض',
@@ -189,8 +192,8 @@ class OfferController extends Controller
                     $exchange->product_id = $offer->product_id;
                     $exchange->offer_id = $offer->id;
                     $exchange->save();
+                    broadcast(new AcceptOffer($offer))->toOthers();
                 }
-
                 return response()->json([
                     'status' => $isSavedOffer && $isSavedProduct,
                     'message' => $isSavedOffer && $isSavedProduct ? 'تم قبول العرض و حجز المنتج بنجاح' : 'فشل قبول العرض',

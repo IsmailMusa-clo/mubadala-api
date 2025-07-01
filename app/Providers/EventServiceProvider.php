@@ -2,6 +2,14 @@
 
 namespace App\Providers;
 
+use App\Events\AcceptOffer;
+use App\Events\AddOffer;
+use App\Events\ChatMessage;
+use App\Events\CompleteExchange;
+use App\Listeners\sendAcceptOfferNotification;
+use App\Listeners\sendAddOfferNotification;
+use App\Listeners\sendCompleteExchangeNotification;
+use App\Listeners\sendMessageSendNotification;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -17,6 +25,18 @@ class EventServiceProvider extends ServiceProvider
     protected $listen = [
         Registered::class => [
             SendEmailVerificationNotification::class,
+        ],
+        AddOffer::class => [
+            sendAddOfferNotification::class,
+        ],
+        AcceptOffer::class => [
+            sendAcceptOfferNotification::class,
+        ],
+        CompleteExchange::class => [
+            sendCompleteExchangeNotification::class,
+        ],
+        ChatMessage::class => [
+            sendMessageSendNotification::class
         ],
     ];
 
