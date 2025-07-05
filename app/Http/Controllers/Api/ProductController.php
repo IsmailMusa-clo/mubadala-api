@@ -25,6 +25,51 @@ class ProductController extends Controller
     //     ], 200);
     // }
 
+    // public function index(Request $request)
+    // {
+    //     $query = Product::with('user', 'category', 'images', 'tags');
+
+    //     if ($request->filled('category_id')) {
+    //         $query->whereHas('category', function ($q) use ($request) {
+    //             $q->where('id', $request->input('category_id'));
+    //         });
+    //     }
+
+    //     if ($request->filled('keyword')) {
+    //         $keyword = $request->input('keyword');
+    //         $query->where('name', 'like', "%{$keyword}%");
+    //     }
+
+    //     if ($request->filled('location')) {
+    //         $location = $request->input('location');
+    //         $query->where('location', $location);
+    //     }
+
+    //     if ($request->filled('status')) {
+    //         $query->where('status', $request->input('status'));
+    //     }
+
+    //     if ($request->filled('created_from')) {
+    //         $query->whereDate('created_at', '>=', $request->input('created_from'));
+    //     }
+
+    //     if ($request->filled('created_to')) {
+    //         $query->whereDate('created_at', '<=', $request->input('created_to'));
+    //     }
+
+    //     $products = $query->latest()->get()->append('tags_array');
+    //     $products->makeHidden('tags', 'category');
+    //     $products->each(function ($product) {
+    //         $category = $product->category->name;
+    //     });
+
+    //     return response()->json([
+    //         'status' => true,
+    //         'products' => $products,
+    //     ], 200);
+    // }
+
+
     public function index(Request $request)
     {
         $query = Product::with('user', 'category', 'images', 'tags');
@@ -59,12 +104,29 @@ class ProductController extends Controller
 
         $products = $query->latest()->get();
 
+        $products = $products->map(function ($product) {
+            return [
+                'id' => $product->id,
+                'name' => $product->name,
+                'description' => $product->description,
+                'location' => $product->location,
+                'status' => $product->status,
+                'created_at' => $product->created_at,
+                'tags' => $product->tags->pluck('name')->toArray(),
+                'category' => $product->category ? $product->category->name : null,
+                'images' => $product->images,
+                'owner' => [
+                    'id' => $product->user->id,
+                    'name' => $product->user->name,
+                ],
+            ];
+        });
+
         return response()->json([
             'status' => true,
             'products' => $products,
         ], 200);
     }
-
 
     /**
      * Store a newly created resource in storage.
