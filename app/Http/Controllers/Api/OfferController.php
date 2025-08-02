@@ -23,6 +23,18 @@ class OfferController extends Controller
     {
         //
         $offers = Offer::with('user', 'product')->get();
+        $offers = $offers->map(function ($offer) {
+            return [
+                'id' => $offer->id,
+                'product_id' => $offer->product_id,
+                'itemOfferedDescription' => $offer->description,
+                'itemOfferedLocation' => $offer->location,
+                'itemOfferedImageUrls' => $offer->images()->pluck('path')->toArray(),
+                'status' => $offer->status,
+                'createdAt' => $offer->created_at,
+                'user' => $offer->user,
+            ];
+        });
         return response()->json([
             'status' => true,
             'offers' => $offers
@@ -60,10 +72,21 @@ class OfferController extends Controller
                 }
             }
             broadcast(new AddOffer($offer))->toOthers();
+            $offer->load(['product', 'user', 'images']);
+            $offerData = [
+                'id' => $offer->id,
+                'product_id' => $offer->product_id,
+                'itemOfferedDescription' => $offer->description,
+                'itemOfferedLocation' => $offer->location,
+                'itemOfferedImageUrls' => $offer->images()->pluck('path')->toArray(),
+                'status' => $offer->status,
+                'createdAt' => $offer->created_at,
+                'user' => $offer->user,
+            ];
             return response()->json([
                 'status' => $offer ? true : false,
                 'message' => $offer ? 'تم انشاء العرض بنجاح' : 'فشل انشاء العرض',
-                'offer' => $offer->load(['product', 'user', 'images']),
+                'offer' => [$offerData],
             ], $offer ? 201 : 400);
         } else {
             return response()->json([
@@ -114,10 +137,21 @@ class OfferController extends Controller
                         $offerImage->save();
                     }
                 }
+                $offer->load(['user', 'product', 'images']);
+                $offerData = [
+                    'id' => $offer->id,
+                    'product_id' => $offer->product_id,
+                    'itemOfferedDescription' => $offer->description,
+                    'itemOfferedLocation' => $offer->location,
+                    'itemOfferedImageUrls' => $offer->images()->pluck('path')->toArray(),
+                    'status' => $offer->status,
+                    'createdAt' => $offer->created_at,
+                    'user' => $offer->user,
+                ];
                 return response()->json([
                     'status' => $isUpdated,
                     'message' => $isUpdated ? 'تم تعديل العرض بنجاح' : 'فشل تعديل العرض',
-                    'offer' => $offer->load(['user', 'product', 'images']),
+                    'offer' => [$offerData],
                 ], $isUpdated ? 200 : 400);
             } else {
                 return response()->json([
@@ -166,6 +200,18 @@ class OfferController extends Controller
     {
         $user = auth()->user();
         $offers = $user->offers()->with('user', 'product')->latest()->get();
+        $offers = $offers->map(function ($offer) {
+            return [
+                'id' => $offer->id,
+                'product_id' => $offer->product_id,
+                'itemOfferedDescription' => $offer->description,
+                'itemOfferedLocation' => $offer->location,
+                'itemOfferedImageUrls' => $offer->images()->pluck('path')->toArray(),
+                'status' => $offer->status,
+                'createdAt' => $offer->created_at,
+                'user' => $offer->user,
+            ];
+        });
         return response()->json([
             'status' => true,
             'offers' => $offers

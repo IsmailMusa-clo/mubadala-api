@@ -107,18 +107,30 @@ class ProductController extends Controller
         $products = $products->map(function ($product) {
             return [
                 'id' => $product->id,
-                'name' => $product->name,
+                'title' => $product->name,
                 'description' => $product->description,
                 'location' => $product->location,
                 'status' => $product->status,
                 'created_at' => $product->created_at,
                 'tags' => $product->tags->pluck('name')->toArray(),
                 'category' => $product->category ? $product->category->name : null,
-                'images' => $product->images,
+                'category_id' => $product->category ? $product->category->id : null,
+                'imageUrl' => $product->images()->pluck('image')->toArray(),
                 'owner' => [
                     'id' => $product->user->id,
                     'name' => $product->user->name,
                 ],
+                'comments' => $product->offers->map(function ($offer) {
+                    return [
+                        'id' => $offer->id,
+                        'user' => $offer->user,
+                        'product_id' => $offer->product_id,
+                        'itemOfferedDescription' => $offer->description,
+                        'itemOfferedLocation' => $offer->location,
+                        'itemOfferedImageUrls' => $offer->images()->pluck('path')->toArray(),
+                        'created_at' => $offer->created_at,
+                    ];
+                }),
             ];
         });
 
@@ -174,12 +186,37 @@ class ProductController extends Controller
                 }
             }
             $product->load('user', 'category', 'images', 'tags');
-            $product->makeHidden('category');
-            $product->category_name = $product->category->name;
+            $productData = [
+                'id' => $product->id,
+                'title' => $product->name,
+                'description' => $product->description,
+                'location' => $product->location,
+                'status' => $product->status,
+                'created_at' => $product->created_at,
+                'tags' => $product->tags->pluck('name')->toArray(),
+                'category' => $product->category ? $product->category->name : null,
+                'imageUrl' => $product->images()->pluck('image')->toArray(),
+                'owner' => [
+                    'id' => $product->user->id,
+                    'name' => $product->user->name,
+                ],
+                'comments' => $product->offers->map(function ($offer) {
+                    return [
+                        'id' => $offer->id,
+                        'user' => $offer->user,
+                        'product_id' => $offer->product_id,
+                        'itemOfferedDescription' => $offer->description,
+                        'itemOfferedLocation' => $offer->location,
+                        'itemOfferedImageUrls' => $offer->images()->pluck('path')->toArray(),
+                        'created_at' => $offer->created_at,
+                    ];
+                }),
+            ];
+
             return response()->json([
                 'status' => $isSaved,
                 'message' => $isSaved ? 'تم انشاء منتج بنجاح' : 'فشل انشاء منتج',
-                'product' => $product
+                'product' => [$productData]
             ],  $isSaved ? 201 : 400);
         } else {
             return response()->json([
@@ -198,9 +235,34 @@ class ProductController extends Controller
         $product->makeHidden('category');
         $product->offers_count = $product->offers()->count();
         $product->category_name = $product->category->name;
+        $productData = [
+            'id' => $product->id,
+            'title' => $product->name,
+            'description' => $product->description,
+            'location' => $product->location,
+            'status' => $product->status,
+            'tags' => $product->tags()->pluck('name')->toArray(),
+            'category' => $product->category->name,
+            'imageUrl' => $product->images()->pluck('image')->toArray(),
+            'owner' => [
+                'id' => $product->user->id,
+                'name' => $product->user->name,
+            ],
+            'comments' => $product->offers->map(function ($offer) {
+                return [
+                    'id' => $offer->id,
+                    'user' => $offer->user,
+                    'product_id' => $offer->product_id,
+                    'itemOfferedDescription' => $offer->description,
+                    'itemOfferedLocation' => $offer->location,
+                    'itemOfferedImageUrls' => $offer->images()->pluck('path')->toArray(),
+                    'created_at' => $offer->created_at,
+                ];
+            }),
+        ];
         return response()->json([
             'status' => true,
-            'product' => $product->load('user')
+            'product' => [$productData]
         ], 200);
     }
 
@@ -252,12 +314,38 @@ class ProductController extends Controller
                     }
                 }
                 $product->load('user', 'category', 'images', 'tags');
-                $product->makeHidden('category');
-                $product->category_name = $product->category->name;
+                // $product->makeHidden('category');
+                // $product->category_name = $product->category->name;
+
+                $productData = [
+                    'id' => $product->id,
+                    'title' => $product->name,
+                    'description' => $product->description,
+                    'location' => $product->location,
+                    'status' => $product->status,
+                    'tags' => $product->tags()->pluck('name')->toArray(),
+                    'category' => $product->category->name,
+                    'imageUrl' => $product->images()->pluck('image')->toArray(),
+                    'owner' => [
+                        'id' => $product->user->id,
+                        'name' => $product->user->name,
+                    ],
+                    'comments' => $product->offers->map(function ($offer) {
+                        return [
+                            'id' => $offer->id,
+                            'user' => $offer->user,
+                            'product_id' => $offer->product_id,
+                            'itemOfferedDescription' => $offer->description,
+                            'itemOfferedLocation' => $offer->location,
+                            'itemOfferedImageUrls' => $offer->images()->pluck('path')->toArray(),
+                            'created_at' => $offer->created_at,
+                        ];
+                    }),
+                ];
                 return response()->json([
                     'status' => $isUpdated,
                     'message' => $isUpdated ? 'تم تعديل المنتج بنجاح' : 'فشل تعديل المنتج',
-                    'product' => $product
+                    'product' => [$productData]
                 ],  $isUpdated ? 200 : 400);
             } else {
                 return response()->json([
@@ -306,6 +394,33 @@ class ProductController extends Controller
     {
         $userId = auth()->id();
         $products = Product::where('user_id', $userId)->with('images', 'tags')->get();
+        $products = $products->map(function ($product) {
+            return [
+                'id' => $product->id,
+                'title' => $product->name,
+                'description' => $product->description,
+                'location' => $product->location,
+                'tags' => $product->tags()->pluck('name')->toArray(),
+                'category' => $product->category ? $product->category->name : null,
+                'category_id' => $product->category ? $product->category->id : null,
+                'imageUrl' => $product->images()->pluck('image')->toArray(),
+                'owner' => [
+                    'id' => $product->user_id,
+                    'name' => $product->user->name,
+                ],
+                'comments' => $product->offers->map(function ($offer) {
+                    return [
+                        'id' => $offer->id,
+                        'user' => $offer->user,
+                        'product_id' => $offer->product_id,
+                        'itemOfferedDescription' => $offer->description,
+                        'itemOfferedLocation' => $offer->location,
+                        'itemOfferedImageUrls' => $offer->images()->pluck('path')->toArray(),
+                        'created_at' => $offer->created_at,
+                    ];
+                }),
+            ];
+        });
         return response()->json([
             'status' => true,
             'products' => $products,
