@@ -41,8 +41,8 @@ Route::middleware('auth:sanctum', 'verified')->group(function () {
     Route::get('my-offers', [OfferController::class, 'myOffers']);
     Route::put('offers/{offer}/accept', [OfferController::class, 'acceptOffer']);
     Route::put('products/{product}/exchanged-product', [ExchangeController::class, 'exchangedProduct']);
-    Route::apiResource('products', ProductController::class);
     Route::apiResource('offers', OfferController::class);
+    Route::apiResource('products', ProductController::class);
 
     Route::post('chat', [ChatController::class, 'getOrCreateChat']);
     Route::post('chat/send-message', [ChatController::class, 'sendMessage']);
@@ -54,7 +54,6 @@ Route::middleware('auth:sanctum', 'verified')->group(function () {
 });
 
 Route::prefix('email')->group(function () {
-
     Route::post('verification-notification', [EmailVerificationController::class, 'resend'])
         ->middleware(['auth:sanctum', 'throttle:6,1'])
         ->name('verification.send');
