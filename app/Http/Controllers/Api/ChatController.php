@@ -49,8 +49,6 @@ class ChatController extends Controller
         ], 200);
     }
 
-
-
     public function sendMessage(Request $request)
     {
         $request->validate([

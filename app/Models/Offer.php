@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Offer extends Model
 {
@@ -16,6 +17,19 @@ class Offer extends Model
         'product_id',
         'status'
     ];
+
+    protected static function booted()
+    {
+        static::deleting(function ($offer) {
+            foreach ($offer->images as $image) {
+                if (Storage::disk('public')->exists($image->path)) {
+                    Storage::disk('public')->delete($image->path);
+                }
+                $image->delete();
+            }
+        });
+    }
+
 
     public function user()
     {
