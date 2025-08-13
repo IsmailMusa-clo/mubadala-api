@@ -54,10 +54,12 @@
                                                     class="dropdown-item">
                                                     <i class="ri-eye-fill align-bottom me-2 text-muted"></i> عرض
                                                 </a></li>
+                                            @can('حذف المنتجات')
                                             <li><button onclick="confirmDelete('{{$product->id}}',this)"
                                                     class="dropdown-item">
                                                     <i class="ri-delete-bin-fill align-bottom me-2 text-muted"></i> حذف
                                                 </button></li>
+                                            @endcan
                                         </ul>
                                     </div>
                                 </td>

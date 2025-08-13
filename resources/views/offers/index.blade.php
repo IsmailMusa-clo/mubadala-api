@@ -51,10 +51,12 @@
                                             <li><a href="{{route('doffers.show',$offers->id)}}" class="dropdown-item">
                                                     <i class="ri-eye-fill align-bottom me-2 text-muted"></i> عرض
                                                 </a></li>
+                                            @can('حذف العروض')
                                             <li><button onclick="confirmDelete('{{$offers->id}}',this)"
                                                     class="dropdown-item">
                                                     <i class="ri-delete-bin-fill align-bottom me-2 text-muted"></i> حذف
                                                 </button></li>
+                                            @endcan
                                         </ul>
                                     </div>
                                 </td>

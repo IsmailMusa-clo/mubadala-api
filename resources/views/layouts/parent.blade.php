@@ -200,7 +200,7 @@
 
     <script src="{{ asset('assets/js/pages/datatables.init.js') }}"></script>
     <!-- App js -->
-    <script src="{{ asset('assets/js/app.js') }}"></script>
+
     <script src="{{ asset('assets/js/axios.min.js') }}"></script>
     <script src="{{ asset('assets/js/toastr.min.js') }}"></script>
 

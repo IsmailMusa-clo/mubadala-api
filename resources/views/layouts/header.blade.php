@@ -517,7 +517,15 @@
                     <button type="button" class="btn" id="page-header-user-dropdown" data-bs-toggle="dropdown"
                         aria-haspopup="true" aria-expanded="false">
                         <span class="d-flex align-items-center">
-                            <img class="rounded-circle header-profile-user" src="" alt="Header Avatar" />
+                            @if (auth('admin')->check() && auth('admin')->user()->admin_img &&
+                            Storage::disk('public')->exists(auth('admin')->user()->admin_img))
+                            <img class="rounded-circle header-profile-user"
+                                src="{{ Storage::disk('public')->url(auth('admin')->user()->admin_img) }}"
+                                alt="Header Avatar" />
+                            @else
+                            <img class="rounded-circle header-profile-user"
+                                src="{{ asset('assets/images/users/avatar-1.jpg') }}" alt="Header Avatar" />
+                            @endif
                             <span class="text-start ms-xl-2">
                                 <span class="d-none d-xl-inline-block ms-1 fw-medium user-name-text">
                                 </span>
@@ -527,14 +535,15 @@
                     </button>
                     <div class="dropdown-menu dropdown-menu-end">
                         <!-- item-->
-                        <h6 class="dropdown-header">أهلاً وسهلا محمد</h6>
+                        <h6 class="dropdown-header">أهلاً وسهلا
+                            {{auth('admin')->check() ? auth('admin')->user()->name : 'لا يوجد'}}</h6>
 
-                        <a class="dropdown-item" href=" profile"><i
+                        <a class="dropdown-item" href="{{route('auth.profile')}}"><i
                                 class="mdi mdi-account-circle text-muted fs-16 align-middle me-1"></i>
                             <span class="align-middle">الصفحة الشخصية</span></a>
                         <div class="dropdown-divider"></div>
 
-                        <a class="dropdown-item" href="#" onclick="document.getElementById('logout').submit()"><i
+                        <a class="dropdown-item" href="{{route('logout')}}"><i
                                 class="mdi mdi-logout text-muted fs-16 align-middle me-1"></i>
                             <span class="align-middle" data-key="t-logout">تسجيل الخروج</span></a>
 

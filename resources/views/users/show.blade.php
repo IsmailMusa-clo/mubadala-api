@@ -71,10 +71,12 @@
                             </a>
                         </li>
                     </ul>
+                    @can('تعديل المستخدمين')
                     <div class="flex-shrink-0">
                         <a href="{{route('users.edit',$user->id)}}" class="btn btn-success"><i
                                 class="ri-edit-box-line align-bottom"></i>تعديل البروفايل</a>
                     </div>
+                    @endcan
                 </div>
                 <!-- Tab panes -->
                 <div class="tab-content pt-4 text-muted">

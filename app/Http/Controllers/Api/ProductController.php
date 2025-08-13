@@ -195,7 +195,12 @@ class ProductController extends Controller
                 'created_at' => $product->created_at,
                 'tags' => $product->tags->pluck('name')->toArray(),
                 'category' => $product->category ? $product->category->name : null,
-                'imageUrl' => $product->images()->pluck('image')->toArray(),
+                'imageUrl' => $product->images()
+                    ->get()
+                    ->map(function ($img) {
+                        return asset('storage/' . $img->image);
+                    })
+                    ->toArray(),
                 'owner' => [
                     'id' => $product->user->id,
                     'name' => $product->user->name,
@@ -243,7 +248,12 @@ class ProductController extends Controller
             'status' => $product->status,
             'tags' => $product->tags()->pluck('name')->toArray(),
             'category' => $product->category->name,
-            'imageUrl' => $product->images()->pluck('image')->toArray(),
+            'imageUrl' => $product->images()
+                ->get()
+                ->map(function ($img) {
+                    return asset('storage/' . $img->image);
+                })
+                ->toArray(),
             'owner' => [
                 'id' => $product->user->id,
                 'name' => $product->user->name,
@@ -325,7 +335,12 @@ class ProductController extends Controller
                     'status' => $product->status,
                     'tags' => $product->tags()->pluck('name')->toArray(),
                     'category' => $product->category->name,
-                    'imageUrl' => $product->images()->pluck('image')->toArray(),
+                    'imageUrl' => $product->images()
+                        ->get()
+                        ->map(function ($img) {
+                            return asset('storage/' . $img->image);
+                        })
+                        ->toArray(),
                     'owner' => [
                         'id' => $product->user->id,
                         'name' => $product->user->name,
@@ -403,7 +418,12 @@ class ProductController extends Controller
                 'tags' => $product->tags()->pluck('name')->toArray(),
                 'category' => $product->category ? $product->category->name : null,
                 'category_id' => $product->category ? $product->category->id : null,
-                'imageUrl' => $product->images()->pluck('image')->toArray(),
+                'imageUrl' => $product->images()
+                    ->get()
+                    ->map(function ($img) {
+                        return asset('storage/' . $img->image);
+                    })
+                    ->toArray(),
                 'owner' => [
                     'id' => $product->user_id,
                     'name' => $product->user->name,

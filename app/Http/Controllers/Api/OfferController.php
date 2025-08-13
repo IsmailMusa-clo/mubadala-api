@@ -29,7 +29,12 @@ class OfferController extends Controller
                 'product_id' => $offer->product_id,
                 'itemOfferedDescription' => $offer->description,
                 'itemOfferedLocation' => $offer->location,
-                'itemOfferedImageUrls' => $offer->images()->pluck('path')->toArray(),
+                'itemOfferedImageUrls' => $offer->images()
+                    ->get()
+                    ->map(function ($img) {
+                        return asset('storage/' . $img->image);
+                    })
+                    ->toArray(),
                 'status' => $offer->status,
                 'createdAt' => $offer->created_at,
                 'user' => $offer->user,
@@ -78,7 +83,12 @@ class OfferController extends Controller
                 'product_id' => $offer->product_id,
                 'itemOfferedDescription' => $offer->description,
                 'itemOfferedLocation' => $offer->location,
-                'itemOfferedImageUrls' => $offer->images()->pluck('path')->toArray(),
+                'itemOfferedImageUrls' => $offer->images()
+                    ->get()
+                    ->map(function ($img) {
+                        return asset('storage/' . $img->image);
+                    })
+                    ->toArray(),
                 'status' => $offer->status,
                 'createdAt' => $offer->created_at,
                 'user' => $offer->user,
@@ -143,7 +153,12 @@ class OfferController extends Controller
                     'product_id' => $offer->product_id,
                     'itemOfferedDescription' => $offer->description,
                     'itemOfferedLocation' => $offer->location,
-                    'itemOfferedImageUrls' => $offer->images()->pluck('path')->toArray(),
+                    'itemOfferedImageUrls' => $offer->images()
+                        ->get()
+                        ->map(function ($img) {
+                            return asset('storage/' . $img->image);
+                        })
+                        ->toArray(),
                     'status' => $offer->status,
                     'createdAt' => $offer->created_at,
                     'user' => $offer->user,
@@ -206,7 +221,12 @@ class OfferController extends Controller
                 'product_id' => $offer->product_id,
                 'itemOfferedDescription' => $offer->description,
                 'itemOfferedLocation' => $offer->location,
-                'itemOfferedImageUrls' => $offer->images()->pluck('path')->toArray(),
+                'itemOfferedImageUrls' => $offer->images()
+                    ->get()
+                    ->map(function ($img) {
+                        return asset('storage/' . $img->image);
+                    })
+                    ->toArray(),
                 'status' => $offer->status,
                 'createdAt' => $offer->created_at,
                 'user' => $offer->user,

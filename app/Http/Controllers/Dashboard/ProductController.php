@@ -11,12 +11,16 @@ class ProductController extends Controller
     //
     public function index()
     {
+        $this->authorize('viewAny', Product::class);
+
         $products = Product::with('user')->get();
         return view('products.index', compact('products'));
     }
 
     public function destroy(Product $product)
     {
+        $this->authorize('viewAny', $product);
+
         $isDeleted = $product->delete();
         return response()->json([
             'message' => $isDeleted ? 'تم حذف المنتج بنجاح' : 'فشل حذف المنتج',

@@ -14,22 +14,30 @@ class UserController extends Controller
     //
     public function index()
     {
+        $this->authorize('viewAny', User::class);
+
         $users = User::all();
         return view('users.index', compact('users'));
     }
 
     public function show(User $user)
     {
+        $this->authorize('view', $user);
+
         return view('users.show', compact('user'));
     }
 
     public function edit(User $user)
     {
+        $this->authorize('update', $user);
+
         return view('users.edit', compact('user'));
     }
 
     public function update(Request $request, User $user)
     {
+        $this->authorize('update', $user);
+
         $validator = Validator($request->all(), [
             'first_name' => 'nullable|string|min:3|max:45',
             'last_name' => 'nullable|string|min:3|max:45',
@@ -63,6 +71,8 @@ class UserController extends Controller
 
     public function updateUserImage(Request $request, User $user)
     {
+        $this->authorize('update', $user);
+
         $validator = Validator($request->all(), [
             'user_img' => 'nullable|image'
         ]);
@@ -91,6 +101,8 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
+        $this->authorize('delete', $user);
+
         if ($user->user_img &&  Storage::disk('public')->exists($user->user_img)) {
             Storage::disk('public')->delete($user->user_img);
         }

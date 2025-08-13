@@ -30,32 +30,40 @@
                                 <td>{{ $category->description ?? 'لا يوجد' }}</td>
                                 <td>{{ $category->products_count ?? 0 }}</td>
                                 <td>
+                                    @canany(['عرض التصنيفات', 'تعديل التصنيفات', 'حذف التصنيفات'])
                                     <div class="dropdown d-inline-block">
                                         <button class="btn btn-soft-secondary btn-sm" type="button"
                                             data-bs-toggle="dropdown">
                                             <i class="ri-more-fill align-middle"></i>
                                         </button>
                                         <ul class="dropdown-menu dropdown-menu-end">
+                                            @can('عرض التصنيفات')
                                             <li>
                                                 <a href="{{ route('categories.show', $category->id) }}"
                                                     class="dropdown-item">
                                                     <i class="ri-eye-fill align-bottom me-2 text-muted"></i> عرض
                                                 </a>
                                             </li>
+                                            @endcan
+                                            @can('تعديل التصنيفات')
                                             <li>
                                                 <a href="{{ route('categories.edit', $category->id) }}"
                                                     class="dropdown-item">
                                                     <i class="ri-pencil-fill align-bottom me-2 text-muted"></i> تعديل
                                                 </a>
                                             </li>
+                                            @endcan
+                                            @can('حذف التصنيفات')
                                             <li>
                                                 <button onclick="confirmDelete('{{ $category->id }}', this)"
                                                     class="dropdown-item">
                                                     <i class="ri-delete-bin-fill align-bottom me-2 text-muted"></i> حذف
                                                 </button>
                                             </li>
+                                            @endcan
                                         </ul>
                                     </div>
+                                    @endcanany
                                 </td>
                             </tr>
                             @empty

@@ -46,16 +46,22 @@
                                             <i class="ri-more-fill align-middle"></i>
                                         </button>
                                         <ul class="dropdown-menu dropdown-menu-end">
+                                            @can('عرض المستخدمين')
                                             <li><a href="{{ route('users.show',$user->id) }}" class="dropdown-item">
                                                     <i class="ri-eye-fill align-bottom me-2 text-muted"></i> عرض
                                                 </a></li>
+                                            @endcan
+                                            @can('تعديل المستخدمين')
                                             <li><a href="{{ route('users.edit',$user->id) }}" class="dropdown-item">
                                                     <i class="ri-pencil-fill align-bottom me-2 text-muted"></i> تعديل
                                                 </a></li>
+                                            @endcan
+                                            @can('حذف المستخدمين')
                                             <li><button onclick="confirmDelete('{{ $user->id }}',this)"
                                                     class="dropdown-item">
                                                     <i class="ri-delete-bin-fill align-bottom me-2 text-muted"></i> حذف
                                                 </button></li>
+                                            @endcan
                                         </ul>
                                     </div>
                                 </td>

@@ -11,11 +11,13 @@
                     <h4 class="card-title mb-0 flex-grow-1">
                         إضافة التصنيفات
                     </h4>
+                    @can('عرض التصنيفات')
                     <div class="text-end mb-3">
                         <a href="{{route('categories.index')}}" class="btn btn-primary">
                             <i class="ri-back-fill align-bottom me-1"></i>رجوع
                         </a>
                     </div>
+                    @endcan
                 </div>
                 <!-- end card header -->
 

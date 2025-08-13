@@ -15,6 +15,7 @@ class CategoryController extends Controller
     public function index()
     {
         //
+        $this->authorize('viewAny', Category::class);
         $categories = Category::withCount('products')->get();
         return view('categories.index', compact('categories'));
     }
@@ -25,6 +26,8 @@ class CategoryController extends Controller
     public function create()
     {
         //
+        $this->authorize('create', Category::class);
+
         return view('categories.create');
     }
 
@@ -34,6 +37,8 @@ class CategoryController extends Controller
     public function store(Request $request)
     {
         //
+        $this->authorize('create', Category::class);
+
         $validator = Validator($request->all(), [
             'name' => "required|string",
             'description' => "nullable|string",
@@ -68,6 +73,8 @@ class CategoryController extends Controller
     public function edit(Category $category)
     {
         //
+        $this->authorize('update', $category);
+
         return view('categories.edit', compact('category'));
     }
 
@@ -77,6 +84,8 @@ class CategoryController extends Controller
     public function update(Request $request, Category $category)
     {
         //
+        $this->authorize('update', $category);
+
         $validator = Validator($request->all(), [
             'name' => "required|string",
             'description' => "nullable|string",
@@ -102,6 +111,7 @@ class CategoryController extends Controller
     public function destroy(Category $category)
     {
         //
+        $this->authorize('delete', $category);
         $isDeleted = $category->delete();
         return response()->json([
             'message' => $isDeleted ? 'تم حذف التصنيف بنجاح' : 'فشل حذف التصنيف',
